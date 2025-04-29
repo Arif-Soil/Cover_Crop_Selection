@@ -71,6 +71,9 @@ st.markdown("""
 selected_goals = st.multiselect("What are your farming goals?", goal_columns)
 selected_cash_crops = st.multiselect("What cash crops do you want to rotate?", options=cash_crop_options)
 
+if "ai_response" not in st.session_state:
+    st.session_state.ai_response = ""
+
 if st.button("Get Cover Crop Recommendations"):
     if not selected_goals or not selected_cash_crops:
         st.warning("Please select at least one goal and one or more cash crops.")
@@ -94,24 +97,26 @@ if st.button("Get Cover Crop Recommendations"):
             st.markdown("""<h3 style='color: #bb0000;'>Smart Recommendation from AI Agronomist</h3>""", unsafe_allow_html=True)
             with st.spinner("Analyzing cover crops..."):
                 try:
-                    ai_response = get_ai_summary(filtered[display_cols], selected_goals, selected_cash_crops)
-                    st.write(ai_response)
-
-                    # Speak Again button for mobile compatibility
-                    if st.button("🔊 Speak Recommendation Again"):
-                        st.components.v1.html(f"""
-                            <script>
-                                var msg = new SpeechSynthesisUtterance({ai_response!r});
-                                msg.lang = "en-US";
-                                msg.pitch = 1;
-                                msg.rate = 1;
-                                msg.volume = 1;
-                                var voices = window.speechSynthesis.getVoices();
-                                msg.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google')) || voices[0];
-                                window.speechSynthesis.speak(msg);
-                            </script>
-                        """, height=0)
+                    st.session_state.ai_response = get_ai_summary(
+                        filtered[display_cols], selected_goals, selected_cash_crops)
+                    st.write(st.session_state.ai_response)
                 except Exception as e:
                     st.error(f"AI Error: {e}")
 
+if st.session_state.ai_response:
+    if st.button("🔊 Speak Recommendation Again"):
+        st.components.v1.html(f"""
+            <script>
+                var msg = new SpeechSynthesisUtterance({st.session_state.ai_response!r});
+                msg.lang = "en-US";
+                msg.pitch = 1;
+                msg.rate = 1;
+                msg.volume = 1;
+                var voices = window.speechSynthesis.getVoices();
+                msg.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google')) || voices[0];
+                window.speechSynthesis.speak(msg);
+            </script>
+        """, height=0)
+
 st.markdown("</div>", unsafe_allow_html=True)
+
