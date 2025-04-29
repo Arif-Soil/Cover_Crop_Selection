@@ -96,18 +96,21 @@ if st.button("Get Cover Crop Recommendations"):
                 try:
                     ai_response = get_ai_summary(filtered[display_cols], selected_goals, selected_cash_crops)
                     st.write(ai_response)
-                    st.components.v1.html(f"""
-                        <script>
-                            var msg = new SpeechSynthesisUtterance({ai_response!r});
-                            msg.lang = "en-US";
-                            msg.pitch = 1;
-                            msg.rate = 1;
-                            msg.volume = 1;
-                            var voices = window.speechSynthesis.getVoices();
-                            msg.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google')) || voices[0];
-                            window.speechSynthesis.speak(msg);
-                        </script>
-                    """, height=0)
+
+                    # Speak Again button for mobile compatibility
+                    if st.button("🔊 Speak Recommendation Again"):
+                        st.components.v1.html(f"""
+                            <script>
+                                var msg = new SpeechSynthesisUtterance({ai_response!r});
+                                msg.lang = "en-US";
+                                msg.pitch = 1;
+                                msg.rate = 1;
+                                msg.volume = 1;
+                                var voices = window.speechSynthesis.getVoices();
+                                msg.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Google')) || voices[0];
+                                window.speechSynthesis.speak(msg);
+                            </script>
+                        """, height=0)
                 except Exception as e:
                     st.error(f"AI Error: {e}")
 
